@@ -1,0 +1,59 @@
+var express = require("express");
+var bodyParser = require("body-parser");
+
+var app = express();
+
+require("dotenv").config();
+
+console.log("Hello World");
+
+app.use(bodyParser.urlencoded({ extended: false }));
+
+app
+  .route("/*")
+  .get(function (req, res, next) {
+    console.log(`${req.method} ${req.path} - ${req.ip}`); //method path - ip
+    next();
+  })
+  .post(function (req, res, next) {
+    console.log(`${req.method} ${req.path} - ${req.ip}`); //method path - ip
+    next();
+  });
+
+app.get("/", function (req, res) {
+  res.sendFile(__dirname + "/views/index.html");
+  app.use("/public", express.static(__dirname + "/public"));
+});
+
+app.get("/json/", function (req, res) {
+  res.json({
+    message:
+      process.env.MESSAGE_STYLE == "uppercase" ? "HELLO JSON" : "Hello json",
+  });
+});
+
+app.get("/:word/echo", function (req, res) {
+  res.json({ echo: req.params.word });
+});
+
+app.get(
+  "/now",
+  function (req, res, next) {
+    req.time = new Date().toString(); // Hypothetical synchronous operation
+    next();
+  },
+  function (req, res) {
+    res.send({ time: req.time });
+  }
+);
+
+app
+  .route("/name")
+  .get(function (req, res, next) {
+    res.json({ name: `${req.query.first} ${req.query.last}` });
+  })
+  .post(function (req, res, next) {
+    res.json({ name: `${req.body.first} ${req.body.last}` });
+  });
+
+module.exports = app;
